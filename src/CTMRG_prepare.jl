@@ -119,7 +119,7 @@ function diag_coner_tensor(C_expand::ITensor,cindσ::ITensor,
     return Λ, A, iA
 end
 #L+1にするテンソルの作成
-function σ_edge_tensor(β::Float64, J::Float64,
+function σ_edge_tensor_left(β::Float64, J::Float64,
     σindlist_up::Vector{Index{Int64}},σindlist_down::Vector{Index{Int64}},
     indname::String)
     Tlist = []
@@ -133,13 +133,103 @@ function σ_edge_tensor(β::Float64, J::Float64,
 
     for i in 1:length(σindlist_up)
         if i == 1
-            T1 = P_edge(β, J, σindlist_up[1], _σindlist_down[1], sdumyind_list[1])
+            T1 = CTMRG.P_edge(β, J, σindlist_up[1], _σindlist_down[1], sdumyind_list[1])
             push!(Tlist, T1)
         elseif i == length(σindlist_up)
-            T1 = ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i-1],ind)
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i-1],ind)
             push!(Tlist, T1)
         else
-            T1 = ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i-1], sdummyind_list[i])
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i-1], sdummyind_list[i])
+            push!(Tlist, T1)
+        end
+    end
+    result = ITensor(true)
+    for T in Tlist
+        result *= T
+    end
+    return result, ind, _σindlist_down
+end
+function σ_edge_tensor_right(β::Float64, J::Float64,
+    σindlist_up::Vector{Index{Int64}},σindlist_down::Vector{Index{Int64}},
+    indname::String)
+    Tlist = []
+    ind = Index(2, "$indname")
+    sdumyind_list = [Index(2, "dummy,$i") for i in 1:length(σindlist_up)-1]
+    if σindlist_down[1] == σindlist_up[1]
+        _σindlist_down = [prime(σindlist_down[i]) for i in 1:length(σindlist_down)]
+    else
+        _σindlist_down = σindlist_down
+    end
+
+    for i in 1:length(σindlist_up)
+        if i == 1
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[1], _σindlist_down[1], sdumyind_list[i+1],ind)
+            push!(Tlist, T1)
+        elseif i == length(σindlist_up)
+            T1 = CTMRG.P_edge(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i])
+            push!(Tlist, T1)
+        else
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i+1], sdummyind_list[i])
+            push!(Tlist, T1)
+        end
+    end
+    result = ITensor(true)
+    for T in Tlist
+        result *= T
+    end
+    return result, ind, _σindlist_down
+end
+function s_edge_tensor_down(β::Float64, J::Float64,
+    sindlist_left::Vector{Index{Int64}},sindlist_right::Vector{Index{Int64}},
+    indname::String)
+    Tlist = []
+    ind = Index(2, "$indname")
+    σdumyind_list = [Index(2, "dummy,$i") for i in 1:length(sindlist_up)-1]
+    if sindlist_down[1] == sindlist_up[1]
+        _sindlist_right = [prime(sindlist_right[i]) for i in 1:length(sindlist_right)]
+    else
+        _sindlist_right = sindlist_right
+    end
+
+    for i in 1:length(sindlist_up)
+        if i == 1
+            T1 = CTMRG.P_corner(β, J, σdumyind_list[i], sindlist_left[1], _sindlist_down[1])
+            push!(Tlist, T1)
+        elseif i == length(sindlist_up)
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, ind, σdumyind_list[i-1], sindlist_left[i], _sindlist_down[i])
+            push!(Tlist, T1)
+        else
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σdumyind_list[i], σdumyind_list[i-1], sdumyind_list[i], sdumyind_list[i])
+            push!(Tlist, T1)
+        end
+    end
+    result = ITensor(true)
+    for T in Tlist
+        result *= T
+    end
+    return result, ind, _sindlist_down
+end
+function σ_edge_tensor_right(β::Float64, J::Float64,
+    σindlist_up::Vector{Index{Int64}},σindlist_down::Vector{Index{Int64}},
+    indname::String)
+    Tlist = []
+    ind = Index(2, "$indname")
+    sdumyind_list = [Index(2, "dummy,$i") for i in 1:length(σindlist_up)-1]
+    if σindlist_down[1] == σindlist_up[1]
+        _σindlist_down = [prime(σindlist_down[i]) for i in 1:length(σindlist_down)]
+    else
+        _σindlist_down = σindlist_down
+    end
+
+    for i in 1:length(σindlist_up)
+        if i == 1
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[1], _σindlist_down[1], sdumyind_list[i+1],ind)
+            push!(Tlist, T1)
+        elseif i == length(σindlist_up)
+            T1 = CTMRG.P_edge(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i])
+            push!(Tlist, T1)
+        else
+            T1 = CTMRG.ising_transfer_tensor_2D(β, J, σindlist_up[i], _σindlist_down[i], sdumyind_list[i-1], sdummyind_list[i])
             push!(Tlist, T1)
         end
     end

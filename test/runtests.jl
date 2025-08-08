@@ -1,10 +1,12 @@
 using Test
-import CTMRG
-using CTMRG: ising_transfer_element_1D, ising_transfer_matrix_1D, ising_transfer_element_2D, ising_transfer_tensor_2D
-using CTMRG: make_inner_tensors, contruct_with_boundary
-using CTMRG: make_2D_index_σtags, make_2D_index_stags
-using CTMRG: make_diag_Tesnor
-using CTMRG: Index, inds
+using LinearAlgebra
+using ITensors
+
+import CTMRG: ising_transfer_element_1D, ising_transfer_matrix_1D, ising_transfer_element_2D, ising_transfer_tensor_2D
+import CTMRG: make_inner_tensors, contruct_with_boundary
+import CTMRG: make_2D_index_σtags, make_2D_index_stags
+import CTMRG: make_diag_Tesnor
+import CTMRG: Index, inds
 
 @testset "CTMRG.jlのテスト" begin
     #１次元のイジング模型の分配関数を計算する関数のテスト
@@ -49,6 +51,8 @@ using CTMRG: Index, inds
     @testset "make_inner_tensorsのテスト" begin
         σ = CTMRG.make_2D_index_σtags(1)
         s = CTMRG.make_2D_index_stags(1)
+        β = 1.0
+        J = 1.0
         T_list = make_inner_tensors(1, β, J, s, σ)
         for i in 1:size(T_list, 1), j in 1:size(T_list, 2)
             @test T_list[i,j][σ[j,i]=>1, σ[j+1,i]=>1, s[j,i]=>1, s[j,i+1]=>1] ≈ exp(β*J*4) #全てのスピンがup
