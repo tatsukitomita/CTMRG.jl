@@ -1,0 +1,10 @@
+name = "CTMRG"
+uuid = "c050b7f9-16a0-4967-b3f3-566d5b3f75cc"
+authors = ["tomitatatsuki <tomita.tatsuki725@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+ITensors = "9136182c-28ba-11e9-034c-db9fb085ebd5"
+
+[compat]
+ITensors = "0.9.7"
